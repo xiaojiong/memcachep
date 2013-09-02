@@ -18,17 +18,4 @@ func main() {
 	waitForConnections(ls)
 }
 
-func waitForConnections(ls net.Listener) {
-	handler := memcachep.NewRequestHandler()
-	go memcachep.RunServer(handler)
 
-	for {
-		s, e := ls.Accept()
-		if e == nil {
-			log.Printf("Got a connection from %v", s.RemoteAddr())
-			go memcachep.HandleIo(s, handler)
-		} else {
-			log.Printf("Error accepting from %s", ls)
-		}
-	}
-}

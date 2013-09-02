@@ -4,20 +4,35 @@ import (
 	"bufio"
 	"io"
 	"log"
+	"net"
 )
 
-//请求句柄
-type RequestHandler struct {
-	request  chan *MCRequest
+
+type chanReq struct {
+	request *MCRequest
 	response chan *MCResponse
 }
 
-//init请求句柄结构
-func NewRequestHandler() *RequestHandler {
-	return &RequestHandler{request: make(chan *MCRequest), response: make(chan *MCResponse)}
+type reqHandler struct {
+	ch chan chanReq
 }
 
-func HandleIo(s io.ReadWriteCloser, handler *RequestHandler) error {
+func waitForConnections(ls net.Listener) {
+	reqChannel := make(chan chanReq)
+	go RunServer(reqChannel)
+	handler := &reqHandler{reqChannel}
+	for {
+		s, e := ls.Accept()
+		if e == nil {
+			log.Printf("Got a connection from %v", s.RemoteAddr())
+			go HandleIo(s, handler)
+		} else {
+			log.Printf("Error accepting from %s", ls)
+		}
+	}
+}
+
+func HandleIo(s io.ReadWriteCloser, handler *reqHandler) error {
 	defer s.Close()
 	var err error
 	for err == nil {
@@ -26,17 +41,21 @@ func HandleIo(s io.ReadWriteCloser, handler *RequestHandler) error {
 	return err
 }
 
-func HandleMessage(r *bufio.Reader, w io.Writer, handler *RequestHandler) error {
+func HandleMessage(r *bufio.Reader, w io.Writer, handler *reqHandler) error {
 	req, err := ReadPacket(r)
 
 	if err != nil {
 		return err
 	}
 
-	handler.request <- req
-	log.Println("request: ", req.String())
+	cr := chanReq{
+		req,
+		make(chan *MCResponse),
+	}
+	handler.chan <- cr
 
-	res := <-handler.response
+	res := <-cr.response
+
 	if !res.Fatal {
 		res.Opcoed = req.Opcode
 		res.Key = req.Key
@@ -59,15 +78,17 @@ func ReadPacket(r *bufio.Reader) (*MCRequest, error) {
 
 //协议service的action处理方法
 
+
+
 type handler func(req *MCRequest, res *MCResponse)
 
 var handlers = map[CommandCode]handler{}
 
-func RunServer(handler *RequestHandler) {
+func RunServer(handler *chanReq) {
 	for {
 		req := <-handler.request
 
-		handler.response <- dispatch(req)
+		handler.response <- dispatch(req)s
 	}
 }
 

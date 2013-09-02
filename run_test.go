@@ -8,21 +8,6 @@ import (
 	"testing"
 )
 
-func waitForConnections(ls net.Listener) {
-	handler := NewRequestHandler()
-	go RunServer(handler)
-
-	for {
-		s, e := ls.Accept()
-		if e == nil {
-			log.Printf("Got a connection from %v", s.RemoteAddr())
-
-			go HandleIo(s, handler)
-		} else {
-			log.Printf("Error accepting from %s", ls)
-		}
-	}
-}
 
 func Test_T1(t *testing.T) {
 	port := 11345
@@ -32,29 +17,4 @@ func Test_T1(t *testing.T) {
 	}
 
 	waitForConnections(ls)
-}
-
-//memcache 协议后的函数处理
-
-func RunServer(handler *RequestHandler) {
-	for {
-		req := <-handler.request
-
-		handler.response <- dispatch(req)
-	}
-}
-
-func dispatch(req *MCRequest) (res *MCResponse) {
-	if h, ok := handlers[req.Opcode]; ok {
-		res = h(req)
-	} else {
-		return notFound(req)
-	}
-	return
-}
-
-func notFound(req *MCRequest) *MCResponse {
-	var response MCResponse
-	response.Status = UNKNOWN_COMMAND
-	return &response
 }
