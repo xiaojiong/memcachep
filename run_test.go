@@ -1,4 +1,4 @@
-package memcached
+package memcachep
 
 import (
 	"fmt"
@@ -36,12 +36,6 @@ func Test_T1(t *testing.T) {
 
 //memcache 协议后的函数处理
 
-type handler func(req *MCRequest) *MCResponse
-
-var handlers = map[CommandCode]handler{
-	GET: handleGet,
-}
-
 func RunServer(handler *RequestHandler) {
 	for {
 		req := <-handler.request
@@ -56,14 +50,6 @@ func dispatch(req *MCRequest) (res *MCResponse) {
 	} else {
 		return notFound(req)
 	}
-	return
-}
-
-func handleGet(req *MCRequest) (res *MCResponse) {
-	res = &MCResponse{}
-	res.Fatal = false
-	res.Value = []byte("aaabbbccc" + req.Key)
-
 	return
 }
 

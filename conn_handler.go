@@ -1,4 +1,4 @@
-package memcached
+package memcachep
 
 import (
 	"bufio"
@@ -55,4 +55,40 @@ func ReadPacket(r *bufio.Reader) (*MCRequest, error) {
 	req := &MCRequest{}
 	err := req.Receive(r)
 	return req, err
+}
+
+//协议service的action处理方法
+
+type handler func(req *MCRequest, res *MCResponse)
+
+var handlers = map[CommandCode]handler{}
+
+func RunServer(handler *RequestHandler) {
+	for {
+		req := <-handler.request
+
+		handler.response <- dispatch(req)
+	}
+}
+
+func dispatch(req *MCRequest) (res *MCResponse) {
+	if h, ok := handlers[req.Opcode]; ok {
+		res = &MCResponse{}
+		h(req, res)
+	} else {
+		return notFound(req)
+	}
+	return
+}
+
+//未支持命令
+func notFound(req *MCRequest) *MCResponse {
+	var response MCResponse
+	response.Status = UNKNOWN_COMMAND
+	return &response
+}
+
+//给处理程序绑定上 handler
+func BindHandler(opcode CommandCode, h handler) {
+	handlers[opcode] = h
 }
