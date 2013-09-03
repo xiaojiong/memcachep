@@ -4,11 +4,18 @@ import (
 	"fmt"
 )
 
+const VERSION = "0.0.1"
+
+//request command type
 type CommandCode string
+
+//response status type
 type Status int
 
+//status result map
 var StatusRes map[Status]string
 
+//response 状态
 const (
 	SUCCESS Status = iota
 	ERROR
@@ -20,6 +27,7 @@ const (
 	UNKNOWN_COMMAND
 )
 
+//request command
 const (
 	GET     CommandCode = "get"
 	SET     CommandCode = "set"
@@ -29,6 +37,7 @@ const (
 	STATS   CommandCode = "stats"
 )
 
+//初始化response状态的返回结果
 func init() {
 	StatusRes = make(map[Status]string)
 	StatusRes[ERROR] = "ERROR"
@@ -39,6 +48,7 @@ func init() {
 	StatusRes[NOT_FOUND] = "NOT_FOUND"
 }
 
+//status to string
 func (s *Status) ToString() string {
 	rv := StatusRes[*s]
 	if rv == "" {

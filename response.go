@@ -6,14 +6,21 @@ import (
 )
 
 type MCResponse struct {
+	//命令
 	Opcoed CommandCode
+	//返回状态
 	Status Status
-	Key    string
-	Value  []byte
-	Flags  int
-	Fatal  bool
+	//key
+	Key string
+	//返回内容
+	Value []byte
+	//返回标识
+	Flags int
+	//错误
+	Fatal bool
 }
 
+//解析response 并把返回结果写入socket链接
 func (res *MCResponse) Transmit(w io.Writer) (err error) {
 	if res.Status == SUCCESS {
 		switch res.Opcoed {

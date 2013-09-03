@@ -7,11 +7,13 @@ import (
 	"net"
 )
 
+//一个 请求产生 一个 chanReq
 type chanReq struct {
 	request  *MCRequest
 	response chan *MCResponse
 }
 
+//请求句柄
 type reqHandler struct {
 	ch chan chanReq
 }
@@ -75,8 +77,6 @@ func ReadPacket(r *bufio.Reader) (*MCRequest, error) {
 	return req, err
 }
 
-//协议service的action处理方法
-
 type action func(req *MCRequest, res *MCResponse)
 
 var actions = map[CommandCode]action{}
@@ -89,6 +89,7 @@ func RunServer(rc chan chanReq) {
 	}
 }
 
+//分发请求到响应的action操作函数上去
 func dispatch(req *MCRequest) (res *MCResponse) {
 	if h, ok := actions[req.Opcode]; ok {
 		res = &MCResponse{}
@@ -106,7 +107,7 @@ func notFound(req *MCRequest) *MCResponse {
 	return &response
 }
 
-//给处理程序绑定上 handler
+//给request绑定上处理程序
 func BindAction(opcode CommandCode, h action) {
 	actions[opcode] = h
 }
