@@ -18,9 +18,14 @@ type reqHandler struct {
 	ch chan chanReq
 }
 
-func waitForConnections(ls net.Listener) {
+var RunStats Stats
+
+func Listen(ls net.Listener) {
 	reqChannel := make(chan chanReq)
-	go RunServer(reqChannel)
+
+	RunStats := NewStats()
+
+	go waitDispatch(reqChannel)
 	handler := &reqHandler{reqChannel}
 	for {
 		s, e := ls.Accept()
@@ -48,6 +53,7 @@ func HandleMessage(r *bufio.Reader, w io.Writer, handler *reqHandler) error {
 	if err != nil {
 		return err
 	}
+	log.Println(req.String())
 
 	cr := chanReq{
 		req,
@@ -81,7 +87,8 @@ type action func(req *MCRequest, res *MCResponse)
 
 var actions = map[CommandCode]action{}
 
-func RunServer(rc chan chanReq) {
+//等待分发处理
+func waitDispatch(rc chan chanReq) {
 	for {
 		input := <-rc
 

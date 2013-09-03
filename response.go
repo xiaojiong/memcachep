@@ -24,6 +24,8 @@ type MCResponse struct {
 func (res *MCResponse) Transmit(w io.Writer) (err error) {
 	if res.Status == SUCCESS {
 		switch res.Opcoed {
+		case STATS:
+			_, err = w.Write(res.Value)
 		case GET:
 			if res.Status == SUCCESS {
 				rs := fmt.Sprintf("VALUE %s %d %d\r\n%s\r\nEND\r\n", res.Key, res.Flags, len(res.Value), res.Value)

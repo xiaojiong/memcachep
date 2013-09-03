@@ -15,5 +15,5 @@ func main() {
 		log.Fatalf("Got an error:  %s", e)
 	}
 
-	memcachep.waitForConnections(ls)
+	memcachep.Listen(ls)
 }

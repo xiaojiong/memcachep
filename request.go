@@ -43,6 +43,9 @@ func (req *MCRequest) Receive(r *bufio.Reader) error {
 	command := CommandCode(params[0])
 
 	switch command {
+	case STATS:
+		log.Println("stats")
+		req.Opcode = command
 	case SET, ADD, REPLACE:
 		req.Opcode = command
 		req.Key = params[1]
@@ -53,13 +56,12 @@ func (req *MCRequest) Receive(r *bufio.Reader) error {
 
 		req.Value = make([]byte, req.Length)
 		copy(req.Value, value)
-
+		log.Println(req.String())
 	case GET:
 		log.Println(string(line))
 		req.Opcode = command
 		req.Key = params[1]
-	case STATS:
-		req.Opcode = command
+
 	}
 
 	return err
