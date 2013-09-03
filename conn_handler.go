@@ -7,9 +7,8 @@ import (
 	"net"
 )
 
-
 type chanReq struct {
-	request *MCRequest
+	request  *MCRequest
 	response chan *MCResponse
 }
 
@@ -52,7 +51,7 @@ func HandleMessage(r *bufio.Reader, w io.Writer, handler *reqHandler) error {
 		req,
 		make(chan *MCResponse),
 	}
-	handler.chan <- cr
+	handler.ch <- cr
 
 	res := <-cr.response
 
@@ -78,22 +77,20 @@ func ReadPacket(r *bufio.Reader) (*MCRequest, error) {
 
 //协议service的action处理方法
 
+type action func(req *MCRequest, res *MCResponse)
 
+var actions = map[CommandCode]action{}
 
-type handler func(req *MCRequest, res *MCResponse)
-
-var handlers = map[CommandCode]handler{}
-
-func RunServer(handler *chanReq) {
+func RunServer(rc chan chanReq) {
 	for {
-		req := <-handler.request
+		input := <-rc
 
-		handler.response <- dispatch(req)s
+		input.response <- dispatch(input.request)
 	}
 }
 
 func dispatch(req *MCRequest) (res *MCResponse) {
-	if h, ok := handlers[req.Opcode]; ok {
+	if h, ok := actions[req.Opcode]; ok {
 		res = &MCResponse{}
 		h(req, res)
 	} else {
@@ -110,6 +107,6 @@ func notFound(req *MCRequest) *MCResponse {
 }
 
 //给处理程序绑定上 handler
-func BindHandler(opcode CommandCode, h handler) {
-	handlers[opcode] = h
+func BindAction(opcode CommandCode, h action) {
+	actions[opcode] = h
 }
