@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"log"
 	"strconv"
 	"strings"
 )
@@ -39,9 +38,6 @@ func (req *MCRequest) Receive(r *bufio.Reader) error {
 	}
 
 	params := strings.Fields(string(line))
-
-	log.Println(string(line))
-
 	command := CommandCode(params[0])
 
 	switch command {
@@ -57,16 +53,15 @@ func (req *MCRequest) Receive(r *bufio.Reader) error {
 		req.Value = make([]byte, req.Length)
 		copy(req.Value, value)
 	case GET:
-		log.Println(string(line))
 		req.Opcode = command
 		req.Key = params[1]
+		RunStats["cmd_get"].(*CounterStat).Increment(1)
 	case STATS:
 		req.Opcode = command
 		req.Key = ""
 	case DELETE:
 		req.Opcode = command
 		req.Key = params[1]
-		//	req.Expires = int64(params[2])
 	}
 	return err
 }

@@ -3,8 +3,6 @@ package memcachep
 import (
 	"fmt"
 	"io"
-	"log"
-	"time"
 )
 
 type MCResponse struct {
@@ -27,7 +25,6 @@ func (res *MCResponse) Transmit(w io.Writer) (err error) {
 
 	switch res.Opcoed {
 	case STATS:
-		log.Println(time.Now().UnixNano())
 		_, err = w.Write(res.Value)
 	case GET:
 		if res.Status == SUCCESS {

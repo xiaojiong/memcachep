@@ -18,6 +18,7 @@ type reqHandler struct {
 	ch chan chanReq
 }
 
+//服务运行状态
 var RunStats Stats
 
 func Listen(ls net.Listener) {
@@ -30,8 +31,10 @@ func Listen(ls net.Listener) {
 	for {
 		s, e := ls.Accept()
 		if e == nil {
+			//链接数统计
+			RunStats["total_connections"].(*CounterStat).Increment(1)
+			RunStats["curr_connections"].(*CounterStat).Increment(1)
 
-			log.Printf("Got a connection from %v", s.RemoteAddr())
 			go HandleIo(s, handler)
 		} else {
 			log.Println(RunStats)
@@ -41,7 +44,11 @@ func Listen(ls net.Listener) {
 }
 
 func HandleIo(s io.ReadWriteCloser, handler *reqHandler) error {
-	defer s.Close()
+	defer func() {
+		RunStats["curr_connections"].(*CounterStat).Decrement(1)
+		s.Close()
+	}()
+
 	var err error
 	for err == nil {
 		err = HandleMessage(bufio.NewReader(s), s, handler)
