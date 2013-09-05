@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"testing"
+	"time"
 )
 
 func Test_t1(t *testing.T) {
@@ -28,7 +29,10 @@ func init() {
 
 func GetAction(req *MCRequest, res *MCResponse) {
 	res.Fatal = false
-	res.Value = []byte(data[req.Key])
+
+	time.Sleep(1 * time.Second)
+
+	res.Value = []byte("{\"ResList\":[{\"File\":\"csdn.txt\",\"Strings\":[\"qq290747680 # 123456789 # 290747680@qq.com\\r\"],\"Num\":1,\"EndTime\":0,\"StartTime\":0,\"RunTime\":0}],\"Counter\":{\"Num\":1}}")
 }
 
 func SetAction(req *MCRequest, res *MCResponse) {
