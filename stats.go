@@ -69,6 +69,7 @@ func NewStats() Stats {
 	s["golang"] = &StaticStat{runtime.Version()}
 	//运行go程 数量
 	s["goroutines"] = &FuncStat{func() string { return strconv.Itoa(runtime.NumGoroutine()) }}
+	s["cpu_num"] = &StaticStat{strconv.Itoa(runtime.NumCPU())}
 	s["total_connections"] = NewCounterStat()
 	s["curr_connections"] = NewCounterStat()
 	s["cmd_get"] = NewCounterStat()

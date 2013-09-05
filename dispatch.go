@@ -7,7 +7,7 @@ import (
 type action func(req *MCRequest, res *MCResponse)
 
 var actions = map[CommandCode]action{
-	STATS:StatsAction
+	STATS: StatsAction,
 }
 
 //等待分发处理
